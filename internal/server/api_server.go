@@ -9,8 +9,10 @@ import (
 )
 
 func StartAPIServer(port string) {
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
-	router.Use(handler.VerifySignature) // Web3 Signature Verification Middleware
+	router.Use(validateSignature) // Web3 Signature Verification Middleware
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -35,7 +37,13 @@ func StartAPIServer(port string) {
 }
 
 func registerEndpoints(route gin.RouterGroup) {
-	// Blob Routes
-	route.POST("/upload", handler.UploadHandler)
-	route.GET("/download", handler.DownloadHandler)
+	// Owner Routes
+	route.POST("/grant-access", handler.GrantAccessHandler)
+	route.POST("/owner/create", handler.CreateOwnerHandler)
+	route.GET("/owner/retrieve", handler.RetrieveOwnerHandler)
+
+	// Evidence Routes
+	route.POST("/evidence/upload", handler.UploadEvidenceHandler)
+	route.GET("/evidence/list/:pubAddr", handler.ListEvidencesHandler)
+	route.GET("/evidence/download/:evId/:pubAddr", handler.DownloadEvidenceHandler)
 }

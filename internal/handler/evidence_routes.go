@@ -12,7 +12,7 @@ import (
 // ToDo: Add support for dynamic blob object names
 var containerName = os.Getenv("BLOB_CONTAINER")
 
-func UploadHandler(c *gin.Context) {
+func UploadEvidenceHandler(c *gin.Context) {
 	client, err := getBlobServiceClient()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -53,7 +53,7 @@ func UploadHandler(c *gin.Context) {
 	})
 }
 
-func DownloadHandler(c *gin.Context) {
+func DownloadEvidenceHandler(c *gin.Context) {
 	client, err := getBlobServiceClient()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -78,4 +78,7 @@ func DownloadHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file to response"})
 		return
 	}
+}
+
+func ListEvidencesHandler(c *gin.Context) {
 }
