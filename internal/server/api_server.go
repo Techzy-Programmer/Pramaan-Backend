@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func StartAPIServer(port string) {
+func StartAPIServer() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
@@ -24,15 +24,12 @@ func StartAPIServer(port string) {
 	baseRoute := router.Group("/")
 	registerEndpoints(*baseRoute)
 
-	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: router,
-	}
+	keyFile := "private.key"
+	certFile := "fullchain.crt"
+	fmt.Println("Serving backend on https port 443")
 
-	fmt.Println("Serving backend at :" + port)
-
-	if err := server.ListenAndServe(); err != nil {
-		fmt.Println("Stopping web server...")
+	if err := http.ListenAndServeTLS(":443", certFile, keyFile, router); err != nil {
+		fmt.Println("> Stopping web server...\n", err.Error())
 	}
 }
 
@@ -44,7 +41,6 @@ func registerEndpoints(route gin.RouterGroup) {
 
 	// Evidence Routes
 	route.POST("/evidence/upload", handler.UploadEvidenceHandler)
-	route.GET("/evidence/list/:pubAddr", handler.ListEvidencesHandler)
 	route.GET("/evidence/confirmed/:index", handler.ConfirmedEvidenceHandler)
 	route.GET("/evidence/download/:evHash/:pubAddr", handler.DownloadEvidenceHandler)
 }

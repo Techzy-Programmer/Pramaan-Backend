@@ -6,14 +6,11 @@ import (
 	"net/http"
 	"os"
 	"pramaan-chain/internal/db"
-	"pramaan-chain/utils"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// ToDo: Add support for dynamic blob object names
 var containerName = os.Getenv("BLOB_CONTAINER")
 
 func UploadEvidenceHandler(c *gin.Context) {
@@ -30,7 +27,7 @@ func UploadEvidenceHandler(c *gin.Context) {
 
 	success := false
 	blobUploadPath := pubAddr[0] + "/" + hash[0]
-	cErr := db.CreateInitialEvidenceRecord(pubAddr[0], hash[0], ext[0], blobUploadPath)
+	cErr := db.CreateInitialEvidenceRecord(pubAddr[0], hash[0], ext[0])
 	if cErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Looks like this evidence already exists",
@@ -127,12 +124,11 @@ func ConfirmedEvidenceHandler(c *gin.Context) {
 }
 
 func DownloadEvidenceHandler(c *gin.Context) {
-	accessSig, af := c.Request.Header["X-Access-Signature"]
 	selfPubAddr, pf := c.Request.Header["X-Pub-Address"]
 	evHash := c.Param("evHash") // SHA-512 Hash
 	masterPubAddr := c.Param("pubAddr")
 
-	if !pf || !af || len(evHash) != 128 || len(masterPubAddr) == 0 {
+	if !pf || len(evHash) != 128 || len(masterPubAddr) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid evidence hash or public address or access signature",
 		})
@@ -148,26 +144,8 @@ func DownloadEvidenceHandler(c *gin.Context) {
 	}
 
 	if evidence.OwnerAddr != selfPubAddr[0] {
-		subOwner, dbErr := db.RetrieveOwner(selfPubAddr[0])
-		if dbErr != nil || *subOwner.MasterId != masterPubAddr {
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "You don't have access to this evidence",
-			})
-			return
-		}
-
-		verified := utils.VerifySignature(masterPubAddr, strconv.Itoa(int(*subOwner.AccessTimestamp)), accessSig[0])
-		if !verified {
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "Signature verification failed",
-			})
-			return
-		}
-
-		if int64(*subOwner.AccessTimestamp) < time.Now().Unix() {
-			c.JSON(http.StatusForbidden, gin.H{
-				"error": "Your access for this evidence has expired",
-			})
+		ok := verifyEvidenceAccess(c, selfPubAddr[0], masterPubAddr)
+		if !ok {
 			return
 		}
 	}
@@ -200,7 +178,4 @@ func DownloadEvidenceHandler(c *gin.Context) {
 		})
 		return
 	}
-}
-
-func ListEvidencesHandler(c *gin.Context) {
 }

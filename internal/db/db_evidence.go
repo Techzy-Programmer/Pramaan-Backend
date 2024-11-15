@@ -1,11 +1,10 @@
 package db
 
-func CreateInitialEvidenceRecord(pubKey string, hash string, ext string, pth string) error {
+func CreateInitialEvidenceRecord(pubKey string, hash string, ext string) error {
 	return db.Create(Evidence{
 		Hash:       hash,
 		OwnerAddr:  pubKey,
 		Extension:  ext,
-		BlobPath:   pth,
 		CreationTx: "0x0",
 		Index:      -1,
 	}).Error
