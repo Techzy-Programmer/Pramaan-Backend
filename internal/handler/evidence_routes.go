@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"pramaan-chain/internal/db"
+	"pramaan-chain/utils"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -25,9 +26,11 @@ func UploadEvidenceHandler(c *gin.Context) {
 		return
 	}
 
+	evId := utils.HashString(pubAddr[0] + hash[0])
+
 	success := false
-	blobUploadPath := pubAddr[0] + "/" + hash[0]
-	cErr := db.CreateInitialEvidenceRecord(pubAddr[0], hash[0], ext[0])
+	blobUploadPath := pubAddr[0] + "/" + evId
+	cErr := db.CreateInitialEvidenceRecord(pubAddr[0], evId, ext[0])
 	if cErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Looks like this evidence already exists",
@@ -36,7 +39,7 @@ func UploadEvidenceHandler(c *gin.Context) {
 	}
 	defer func() {
 		if !success {
-			db.DeleteEvidenceRecord(hash[0])
+			db.DeleteEvidenceRecord(evId)
 		}
 	}()
 
@@ -92,7 +95,8 @@ func ConfirmedEvidenceHandler(c *gin.Context) {
 		return
 	}
 
-	evidence, dbErr := db.RetrieveEvidenceRecord(pubAddr[0], hash[0])
+	evId := utils.HashString(pubAddr[0] + hash[0])
+	evidence, dbErr := db.RetrieveEvidenceRecord(pubAddr[0], evId)
 	if dbErr != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Evidence with provided hash doesn't exists",
@@ -135,7 +139,8 @@ func DownloadEvidenceHandler(c *gin.Context) {
 		return
 	}
 
-	evidence, rErr := db.RetrieveEvidenceRecord(masterPubAddr, evHash)
+	evId := utils.HashString(masterPubAddr + evHash)
+	evidence, rErr := db.RetrieveEvidenceRecord(masterPubAddr, evId)
 	if rErr != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "Evidence with provided hash doesn't exists",
@@ -158,7 +163,7 @@ func DownloadEvidenceHandler(c *gin.Context) {
 		return
 	}
 
-	blobDownloadPath := masterPubAddr + "/" + evHash
+	blobDownloadPath := masterPubAddr + "/" + evId
 	downloadResponse, err := client.DownloadStream(context.TODO(), containerName, blobDownloadPath, nil)
 
 	if err != nil {
@@ -169,7 +174,7 @@ func DownloadEvidenceHandler(c *gin.Context) {
 	}
 	defer downloadResponse.Body.Close()
 
-	c.Writer.Header().Set("Content-Disposition", "attachment; filename="+evHash+evidence.Extension)
+	c.Writer.Header().Set("Content-Disposition", "attachment; filename="+evId+evidence.Extension)
 	c.Writer.Header().Set("Content-Type", "application/octet-stream")
 	_, err = io.Copy(c.Writer, downloadResponse.Body)
 	if err != nil {

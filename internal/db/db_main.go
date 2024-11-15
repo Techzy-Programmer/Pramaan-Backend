@@ -47,7 +47,7 @@ type Owner struct {
 }
 
 type Evidence struct {
-	Hash       string `gorm:"primaryKey"`
+	EvId       string `gorm:"primaryKey"`
 	Extension  string
 	Index      int    // Index of the evidence in the list on blockchain (-1 Initially)
 	CreationTx string // 0x0 Initially

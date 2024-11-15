@@ -1,8 +1,8 @@
 package db
 
-func CreateInitialEvidenceRecord(pubKey string, hash string, ext string) error {
+func CreateInitialEvidenceRecord(pubKey string, evId string, ext string) error {
 	return db.Create(Evidence{
-		Hash:       hash,
+		EvId:       evId,
 		OwnerAddr:  pubKey,
 		Extension:  ext,
 		CreationTx: "0x0",
@@ -10,15 +10,15 @@ func CreateInitialEvidenceRecord(pubKey string, hash string, ext string) error {
 	}).Error
 }
 
-func DeleteEvidenceRecord(hash string) error {
-	return db.Where(&Evidence{Hash: hash}).Delete(&Evidence{}).Error
+func DeleteEvidenceRecord(evId string) error {
+	return db.Where(&Evidence{EvId: evId}).Delete(&Evidence{}).Error
 }
 
-func RetrieveEvidenceRecord(pubAddr string, hash string) (*Evidence, error) {
+func RetrieveEvidenceRecord(pubAddr string, evId string) (*Evidence, error) {
 	evidence := &Evidence{}
 	err := db.Where(&Evidence{
 		OwnerAddr: pubAddr,
-		Hash:      hash,
+		EvId:      evId,
 	}).First(&evidence).Error
 
 	return evidence, err
