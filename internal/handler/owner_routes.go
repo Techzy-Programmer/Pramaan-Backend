@@ -33,6 +33,7 @@ func CreateOwnerHandler(c *gin.Context) {
 	cErr := db.CreateOwner(&db.Owner{
 		PubAddress: pubAddr,
 		Name:       ownerReq.Name,
+		CreationTx: ownerReq.Tx,
 	})
 	if cErr != nil {
 		c.JSON(500, gin.H{
@@ -71,7 +72,7 @@ func RetrieveOwnerHandler(c *gin.Context) {
 
 type GrantAccessRequest struct {
 	SubOwnerPubAddr string `json:"subOwnerPubAddr" binding:"required"`
-	MSG             string `json:"msg" binding:"required"`
+	AccessTS        int    `json:"accessTS" binding:"required"`
 	Tx              string `json:"tx" binding:"required"`
 }
 
@@ -93,7 +94,7 @@ func GrantAccessHandler(c *gin.Context) {
 		return
 	}
 
-	oErr := db.BridgeOwner(grantReq.SubOwnerPubAddr, grantReq.MSG, grantReq.Tx, pubAddr)
+	oErr := db.BridgeOwner(grantReq.SubOwnerPubAddr, grantReq.AccessTS, grantReq.Tx, pubAddr)
 	if oErr != nil {
 		c.JSON(500, gin.H{
 			"error": "Failed to grant access",

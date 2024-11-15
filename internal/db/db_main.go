@@ -37,20 +37,21 @@ func init() {
 }
 
 type Owner struct {
-	PubAddress string `gorm:"primaryKey"`
-	Name       string
-	MSG        *string
-	CreationTx string
-	AccessTx   *string
-	MasterId   *string
-	Master     *Owner `gorm:"foreignKey:MasterId"`
+	PubAddress      string `gorm:"primaryKey"`
+	Name            string
+	AccessTimestamp *int
+	CreationTx      string
+	AccessTx        *string
+	MasterId        *string
+	Master          *Owner `gorm:"foreignKey:MasterId"`
 }
 
 type Evidence struct {
-	ID         uint `gorm:"primaryKey"`
+	Hash       string `gorm:"primaryKey"`
+	Extension  string
+	BlobPath   string
+	Index      int    // Index of the evidence in the list on blockchain (-1 Initially)
+	CreationTx string // 0x0 Initially
 	OwnerAddr  string
-	Hash       string
-	ResPath    string
-	CreationTx string
 	Owner      *Owner `gorm:"foreignKey:OwnerAddr"`
 }

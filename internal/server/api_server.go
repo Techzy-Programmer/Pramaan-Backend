@@ -45,5 +45,6 @@ func registerEndpoints(route gin.RouterGroup) {
 	// Evidence Routes
 	route.POST("/evidence/upload", handler.UploadEvidenceHandler)
 	route.GET("/evidence/list/:pubAddr", handler.ListEvidencesHandler)
-	route.GET("/evidence/download/:evId/:pubAddr", handler.DownloadEvidenceHandler)
+	route.GET("/evidence/confirmed/:index", handler.ConfirmedEvidenceHandler)
+	route.GET("/evidence/download/:evHash/:pubAddr", handler.DownloadEvidenceHandler)
 }

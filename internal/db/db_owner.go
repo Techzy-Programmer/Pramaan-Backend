@@ -11,7 +11,7 @@ func RetrieveOwner(pubAddr string) (*Owner, error) {
 	return owner, err
 }
 
-func BridgeOwner(subOwnerPubAddr string, msg string, accessTx string, master string) error {
+func BridgeOwner(subOwnerPubAddr string, accessTs int, accessTx string, master string) error {
 	masterOwner := &Owner{}
 	err := db.Where(&Owner{PubAddress: master}).First(&masterOwner).Error
 	if err != nil {
@@ -27,7 +27,7 @@ func BridgeOwner(subOwnerPubAddr string, msg string, accessTx string, master str
 	subOwner.MasterId = &masterOwner.PubAddress
 	subOwner.Master = masterOwner
 	subOwner.AccessTx = &accessTx
-	subOwner.MSG = &msg
+	subOwner.AccessTimestamp = &accessTs
 
 	return db.Save(subOwner).Error
 }
